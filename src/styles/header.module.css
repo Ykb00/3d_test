@@ -1,0 +1,19 @@
+.header {
+  @apply flex items-center justify-between px-6 py-3 bg-gray-100 shadow-md;
+}
+
+.logo {
+  @apply text-xl font-bold tracking-wide cursor-pointer hover:text-gray-600 transition-all duration-300;
+}
+
+.buttons {
+  @apply flex space-x-3;
+}
+
+.button {
+  @apply px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 bg-gray-300 text-gray-900 hover:bg-gray-400;
+}
+
+.secondary {
+  @apply bg-gray-700 text-white hover:bg-gray-600;
+}

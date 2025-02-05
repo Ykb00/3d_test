@@ -1,0 +1,19 @@
+.body {
+  @apply bg-gray-50 min-h-screen;
+}
+
+.container {
+  @apply flex flex-col items-center justify-center py-10;
+}
+
+.content {
+  @apply flex flex-row items-center justify-center space-x-10;
+}
+
+.left {
+  @apply w-1/2 flex justify-center;
+}
+
+.right {
+  @apply w-1/2 flex justify-center;
+}

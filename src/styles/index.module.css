@@ -1,0 +1,35 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+/* Apply a modern font and smooth background */
+.body {
+  @apply bg-gray-100 text-gray-900 font-sans;
+}
+
+/* Center content with a clean, modern layout */
+.container {
+  @apply flex flex-col min-h-screen items-center justify-center p-6;
+}
+
+/* Main content box */
+.main {
+  @apply bg-white shadow-xl rounded-lg p-6 w-full max-w-4xl;
+}
+
+/* Header styling */
+.header {
+  @apply text-3xl font-bold text-center text-gray-800 mb-4;
+}
+
+/* Footer with a subtle look */
+.footer {
+  @apply mt-8 text-gray-600 text-sm text-center;
+}
+
+/* Responsive spacing */
+@media (max-width: 768px) {
+  .main {
+    @apply p-4;
+  }
+}
