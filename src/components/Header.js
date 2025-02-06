@@ -11,8 +11,12 @@ const Header = () => {
 
       {/* Centered buttons */}
       <div className={styles.buttons}>
-        <button className={styles.button}>Upload Design</button>
-        <button className={`${styles.button} ${styles.secondary}`}>Find a Designer</button>
+        <Link href="/" className={styles.button}>
+          Upload Design
+        </Link>
+        <Link href="/designer" className={`${styles.button} ${styles.secondary}`}>
+          Find a Designer
+        </Link>
       </div>
     </header>
   );
