@@ -1,59 +1,107 @@
-.stlViewerContainer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  gap: 20px;
+/* STLViewer.module.css */
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+.mainContainer {
+  @apply container p-10 w-[600px] items-center justify-center rounded-md;
 }
 
-.lottieContainer {
-  flex: 1;
-  max-width: 400px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.dragDropContainer {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.uploadContainer {
+  @apply mb-6 text-center items-center justify-center ;
 }
 
 .fileInput {
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 2px dashed #4a90e2;
-  border-radius: 10px;
-  background-color: #f8f9fa;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
+  @apply border-2 border-dashed border-blue-400 rounded-lg bg-gray-50 p-6 flex flex-col items-center justify-center;
 }
 
-.fileInput:hover {
-  background-color: #e3f2fd;
+.printerContainer {
+  @apply w-[300px] h-[300px] border-2 border-gray-300  bg-red-500 mt-5 p-2 rounded-lg shadow-lg flex justify-center items-center;
 }
 
-.errorMessage {
-  color: red;
-  font-size: 14px;
-  margin-top: 5px;
+.pricingContainer {
+  @apply border p-6 rounded-lg shadow-md bg-white max-w-md w-full;
 }
 
-.viewerContainer {
-  width: 600px;
-  height: 600px;
-  background-color: #f3f4f6;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Button styles for material selection */
+.materialButton {
+  @apply px-4 py-2 border rounded transition-colors;
+}
+.activeMaterial {
+  @apply bg-blue-500 text-white;
+}
+.inactiveMaterial {
+  @apply bg-white text-gray-800 border-gray-300 hover:bg-gray-100;
+}
+
+/* Button styles for infill selection */
+.infillButton {
+  @apply px-4 py-2 border rounded transition-colors;
+}
+.activeInfill {
+  @apply bg-blue-500 text-white;
+}
+.inactiveInfill {
+  @apply bg-white text-gray-800 border-gray-300 hover:bg-gray-100;
+}
+
+/* Button styles for color selection */
+.colorButton {
+  @apply px-4 py-2 border rounded transition-colors;
+}
+.activeColor {
+  @apply bg-blue-500 text-white;
+}
+.inactiveColor {
+  @apply bg-white text-gray-800 border-gray-300 hover:bg-gray-100;
+}
+
+/* Styled Pay Advance button */
+.payAdvanceButton {
+  @apply w-full py-3 bg-green-500 text-white rounded hover:bg-green-600 transition-colors;
+}
+
+/* Additional layout */
+.resultContainer {
+  @apply flex flex-col md:flex-row gap-6 justify-center items-start;
+}
+
+.pricingWrapper {
+  @apply flex justify-center items-center mt-8;
+}
+
+/* Carousel Styles */
+.carouselContainer {
+  @apply relative flex items-center justify-center mt-8;
+}
+
+.carouselItems {
+  @apply flex overflow-hidden;
+}
+
+.carouselImage {
+  @apply w-48 h-48 object-cover mx-2;
+}
+
+.carouselBtn {
+  @apply absolute bg-gray-800 text-white p-2 rounded-full opacity-75 hover:opacity-100;
+}
+
+.carouselBtn.prev {
+  left: 0;
+}
+
+.carouselBtn.next {
+  right: 0;
+}
+
+/* Footer Styles */
+.footer {
+  @apply mt-8 py-4 bg-gray-800 text-white text-center;
+}
+.footer ul {
+  @apply flex justify-center space-x-4;
+}
+.footer ul li {
+  @apply cursor-pointer hover:underline;
 }

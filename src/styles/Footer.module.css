@@ -1,0 +1,12 @@
+/* Footer.module.css */
+.footer {
+  @apply p-4 bg-gray-800 text-white text-center text-sm;
+}
+
+.footerLinks {
+  @apply flex justify-center space-x-4 mb-2;
+}
+
+.footerLink {
+  @apply cursor-pointer hover:underline;
+}
