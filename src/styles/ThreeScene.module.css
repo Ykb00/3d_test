@@ -1,0 +1,20 @@
+/* ThreeScene.module.css */
+.threeSceneContainer {
+  /* Base size for mobile devices */
+  width: 250px;
+  height: 250px;
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* For screens at least 768px wide (e.g. PC) */
+@media (min-width: 768px) {
+  .threeSceneContainer {
+    width: 550px;
+    height: 550px;
+  }
+}

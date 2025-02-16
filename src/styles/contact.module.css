@@ -1,0 +1,50 @@
+/* Contact.module.css */
+
+/* Overall container */
+.container {
+  @apply min-h-screen flex flex-col bg-gray-100;
+}
+
+/* Main content area */
+.main {
+  @apply flex-grow flex flex-col items-center justify-center p-6;
+}
+
+/* Page Title */
+.title {
+  @apply text-3xl font-bold text-gray-800 mb-4;
+}
+
+/* Description Text */
+.description {
+  @apply text-lg text-gray-700 text-center max-w-2xl mb-8;
+}
+
+/* Buttons container - arranged side by side on small screens and above */
+.buttons {
+  @apply flex flex-col sm:flex-row gap-4;
+}
+
+/* WhatsApp Button Styling */
+.whatsappButton {
+  @apply flex items-center justify-center bg-green-500 text-white px-6 py-3 rounded-lg transition-colors hover:bg-green-600;
+  text-decoration: none;
+}
+
+/* Email Button Styling */
+.emailButton {
+  @apply flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors hover:bg-blue-700;
+  text-decoration: none;
+}
+
+/* Icon spacing */
+.icon {
+  @apply mr-2;
+}
+
+/* Ensure buttons stack on very small screens if needed */
+@media (max-width: 640px) {
+  .buttons {
+    @apply flex-col;
+  }
+}

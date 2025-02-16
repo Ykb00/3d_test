@@ -1,0 +1,104 @@
+/* Payment.module.css */
+.container {
+  @apply min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-indigo-100 p-4;
+  position: relative;
+}
+
+.backButton {
+  @apply absolute top-4 left-4 flex items-center gap-2 text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2 rounded-full shadow-lg transition-colors duration-300;
+  text-decoration: none;
+}
+
+.card {
+  @apply bg-white p-8 rounded-xl shadow-2xl w-full max-w-5xl;
+}
+
+.header {
+  @apply text-3xl font-bold text-center text-gray-800 mb-8;
+}
+
+.columns {
+  @apply flex flex-col md:flex-row gap-8;
+}
+
+.leftColumn {
+  @apply md:w-1/2 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-300 pb-6 md:pr-8;
+}
+
+.rightColumn {
+  @apply md:w-1/2 flex flex-col items-center justify-center pt-6 md:pl-8;
+}
+
+.columnTitle {
+  @apply text-xl font-semibold text-gray-700 mb-4;
+}
+
+.upiButtons {
+  @apply flex flex-wrap justify-center gap-6;
+}
+
+.upiButton {
+  @apply flex flex-col items-center justify-center bg-white border border-gray-200 rounded-xl p-4 shadow-md transition-transform transform hover:scale-105 hover:shadow-xl;
+  width: 120px;
+  text-decoration: none;
+}
+
+.upiIcon {
+  @apply w-12 h-12;
+}
+
+.upiButton span {
+  @apply text-sm font-medium text-gray-700 mt-2;
+}
+
+.qrImage {
+  @apply w-56 h-56 object-contain mb-4 border border-gray-300 rounded-xl;
+}
+
+.upiInfo {
+  @apply flex items-center space-x-2 mb-4;
+}
+
+.copyButton {
+  @apply bg-gray-200 hover:bg-gray-300 text-sm py-1 px-3 rounded transition-colors;
+}
+
+.inputContainer {
+  @apply w-full mt-4;
+}
+
+.label {
+  @apply block text-sm font-medium text-gray-600 mb-1;
+}
+
+.inputField {
+  @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2;
+}
+
+.fileInput {
+  @apply mt-2 p-2 border border-gray-300 rounded;
+}
+
+.fileError {
+  @apply text-red-600 text-sm mt-1;
+}
+
+.okButton {
+  @apply mt-4 py-3 px-8 bg-green-600 text-white text-lg font-bold rounded-lg hover:bg-green-700 transition-colors;
+}
+
+.footerText {
+  @apply mt-8 text-center;
+}
+
+.footerText p {
+  @apply text-lg text-gray-700;
+}
+
+.footerNote {
+  @apply text-sm text-gray-500 mt-2;
+}
+
+.uploadingAnimation {
+  @apply w-20 h-20;
+}

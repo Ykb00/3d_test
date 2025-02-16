@@ -1,241 +1,338 @@
-// STLViewer.js
+"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import Dropzone from "react-dropzone";
 import Lottie from "lottie-react";
+import { Upload } from "lucide-react";
+import { createClient } from '@supabase/supabase-js';
+import { v4 as uuidv4 } from 'uuid';
 import pricingData from "./pricing";
 import printerAnimation from "../assets/3dpint.json";
 import loadingAnimation from "../assets/loading.json";
 import uploadingAnimation from "../assets/upload.json";
+import ImageCarousel from "./carousel";
 import styles from "../styles/Stlviewer.module.css";
-import Carousel from "./carousel";
-import Footer from "./Footer";
+import * as THREE from "three";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 
-// Dynamically import the Three.js component with no SSR
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Dynamically import ThreeScene
 const ThreeScene = dynamic(() => import("./ThreeScene"), {
   ssr: false,
   loading: () => (
-    <div className={styles.printerContainer}>
-      <Lottie animationData={loadingAnimation} style={{ width: 500, height: 500 }} />
+    <div className={styles.threeDPreview}>
+      <Lottie
+        animationData={loadingAnimation}
+        className={styles.loadingAnimation}
+      />
     </div>
   ),
 });
 
-// PricingOptions Component
-function PricingOptions({ weight }) {
-  const router = useRouter();
-  const [selectedInfill, setSelectedInfill] = useState("20"); // Infill percentage
-  const [selectedMaterial, setSelectedMaterial] = useState("PLA");
-  const [selectedColor, setSelectedColor] = useState("");
+/** Helper function: Calculate the signed volume of a triangle */
+function signedVolumeOfTriangle(p1, p2, p3) {
+  const cross = new THREE.Vector3();
+  cross.crossVectors(p2, p3);
+  return p1.dot(cross) / 6.0;
+}
 
-  // Define color options based on material
+/** Compute volume (in mm³) from geometry */
+function getVolume(geometry) {
+  const pos = geometry.attributes.position;
+  const faces = pos.count / 3;
+  let volume = 0;
+  const p1 = new THREE.Vector3(), 
+        p2 = new THREE.Vector3(), 
+        p3 = new THREE.Vector3();
+  
+  for (let i = 0; i < faces; i++) {
+    p1.fromBufferAttribute(pos, i * 3 + 0);
+    p2.fromBufferAttribute(pos, i * 3 + 1);
+    p3.fromBufferAttribute(pos, i * 3 + 2);
+    volume += signedVolumeOfTriangle(p1, p2, p3);
+  }
+  return Math.abs(volume);
+}
+
+/** Compute dimensions from geometry */
+function computeDimensions(geometry) {
+  const pos = geometry.attributes.position;
+  const bbox = {
+    x: { min: Infinity, max: -Infinity },
+    y: { min: Infinity, max: -Infinity },
+    z: { min: Infinity, max: -Infinity }
+  };
+  
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    if (x < bbox.x.min) bbox.x.min = x;
+    if (x > bbox.x.max) bbox.x.max = x;
+    if (y < bbox.y.min) bbox.y.min = y;
+    if (y > bbox.y.max) bbox.y.max = y;
+    if (z < bbox.z.min) bbox.z.min = z;
+    if (z > bbox.z.max) bbox.z.max = z;
+  }
+  
+  return {
+    x: bbox.x.max - bbox.x.min,
+    y: bbox.y.max - bbox.y.min,
+    z: bbox.z.max - bbox.z.min,
+  };
+}
+
+function PricingOptions({ volume, stl, dimensions }) {
+  const router = useRouter();
+  const [selectedInfill, setSelectedInfill] = useState("20");
+  const [selectedMaterial, setSelectedMaterial] = useState("PLA");
+  const [selectedColor, setSelectedColor] = useState("White");
+  const [modelId] = useState(uuidv4());
+
   const colorOptions = {
     PLA: ["White", "Black"],
-    "Coloured PLA": ["Green-Violet", "Reddish-Gold"],
+    DualColorPLA: ["Green-Violet", "Reddish-Gold"],
     ABS: ["Gray", "Black"],
   };
 
-  // Initialize selectedColor if not set or when material changes
-  if (!selectedColor || !colorOptions[selectedMaterial].includes(selectedColor)) {
-    setSelectedColor(colorOptions[selectedMaterial][0]);
-  }
-
-  // Handler for material change: update both material and default color
   const handleMaterialChange = (material) => {
     setSelectedMaterial(material);
     setSelectedColor(colorOptions[material][0]);
   };
 
-  // Get material price from pricing.js
-  const materialPrice = pricingData[selectedMaterial];
+  const calculatePrice = (volume_mm3, infillPercentage) => {
+    const volume_cm3 = volume_mm3 / 1000;
+    
+    let baseD, densityFactor;
+    
+    if (volume_cm3 < 15) {
+      // Small models like Bitcoin
+      baseD = 0.498;
+      densityFactor = 0.00622;
+    } else if (volume_cm3 < 70) {
+      // Medium models like Scrapper
+      baseD = 0.266;
+      densityFactor = 0.00332;
+    } else {
+      // Large models like Benchy
+      baseD = 0.190;
+      densityFactor = 0.00126;
+    }
 
-  // Calculate the price based on weight (in grams) and material rate.
-  const calculatedPrice = weight * materialPrice;
-  // Final price is the maximum of Rs 30 or the calculated price.
-  const finalPrice = Math.max(30, calculatedPrice);
-  // Advance payment is the maximum of Rs 15 or 40% of the final price.
+    const weight = volume_cm3 * (baseD + (infillPercentage - 20) * densityFactor);
+    const materialMultiplier = 
+      selectedMaterial === 'PLA' ? 1 : 
+      selectedMaterial === 'DualColorPLA' ? 1.6 : 
+      1.4;
+    
+    return Math.max(30, weight * 5 * materialMultiplier);
+  };
+
+  const finalPrice = calculatePrice(volume, parseInt(selectedInfill));
   const advancePayment = Math.max(15, finalPrice * 0.4);
 
-  // Material options for buttons
-  const materialOptions = Object.keys(pricingData);
+  const handlePayment = async () => {
+    try {
+      if (stl instanceof File) {
+        const { data, error } = await supabase.storage
+          .from('stl-files')
+          .upload(`${modelId}/${stl.name}`, stl, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-  // Handler for payment button: store pricing details as JSON and send to payment page
-  const handlePayment = () => {
-    const pricingDetails = {
-      selectedMaterial,
-      selectedInfill,
-      selectedColor,
-      weight,
-      finalPrice,
-      advancePayment,
-    };
-    router.push({
-      pathname: "/payment",
-      query: { data: JSON.stringify(pricingDetails) },
-    });
+        if (error) throw error;
+        console.log('Successfully uploaded file to Supabase:', data);
+      }
+
+      router.push({
+        pathname: "/payment",
+        query: {
+          stl: stl instanceof File ? stl.name : 'model',
+          modelId: modelId,
+          cost: finalPrice.toFixed(2),
+          advance: advancePayment.toFixed(2),
+          dims: JSON.stringify(dimensions),
+          material: selectedMaterial,
+          infill: selectedInfill,
+          color: selectedColor
+        },
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error uploading file. Please try again.');
+    }
   };
 
   return (
-    <div className={styles.pricingContainer}>
-      <h3 className="text-xl font-bold mb-4">Pricing Options</h3>
-      
-      {/* Material Selection */}
-      <div className="mb-4 space-y-2">
-        <p className="mb-2 font-medium">Select Material:</p>
-        <div className="flex gap-2">
-          {materialOptions.map((material) => (
-            <button
-              key={material}
-              onClick={() => handleMaterialChange(material)}
-              className={`${styles.materialButton} ${
-                selectedMaterial === material ? styles.activeMaterial : styles.inactiveMaterial
-              }`}
-            >
-              {material}
-            </button>
-          ))}
+    <div className={styles.pricingPanel}>
+      <h3 className={styles.pricingTitle}>Print Settings</h3>
+      <div className={styles.optionsContainer}>
+        <div className={styles.optionGroup}>
+          <label className={styles.optionLabel}>Material</label>
+          <div className={`${styles.buttonGrid} ${styles.twoColumns}`}>
+            {Object.keys(colorOptions).map((material) => (
+              <button
+                key={material}
+                onClick={() => handleMaterialChange(material)}
+                className={`${styles.optionButton} ${
+                  selectedMaterial === material ? styles.selected : styles.unselected
+                }`}
+              >
+                {material}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.optionGroup}>
+          <label className={styles.optionLabel}>Color</label>
+          <div className={`${styles.buttonGrid} ${styles.twoColumns}`}>
+            {colorOptions[selectedMaterial].map((color) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                className={`${styles.optionButton} ${
+                  selectedColor === color ? styles.selected : styles.unselected
+                }`}
+              >
+                {color}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.optionGroup}>
+          <label className={styles.optionLabel}>Infill</label>
+          <div className={`${styles.buttonGrid} ${styles.threeColumns}`}>
+            {["20", "50", "100"].map((infill) => (
+              <button
+                key={infill}
+                onClick={() => setSelectedInfill(infill)}
+                className={`${styles.optionButton} ${
+                  selectedInfill === infill ? styles.selected : styles.unselected
+                }`}
+              >
+                {infill}%
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Color Selection */}
-      <div className="mb-4 space-y-2">
-        <p className="mb-2 font-medium">Select Color:</p>
-        <div className="flex gap-2">
-          {colorOptions[selectedMaterial].map((color, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedColor(color)}
-              className={`${styles.colorButton} ${
-                selectedColor === color ? styles.activeColor : styles.inactiveColor
-              }`}
-            >
-              {color}
-            </button>
-          ))}
-        </div>
+      <div className={styles.dimensions}>
+        <h4>Model Dimensions (mm):</h4>
+        <p>
+          X: {dimensions?.x?.toFixed(2) || "N/A"}, 
+          Y: {dimensions?.y?.toFixed(2) || "N/A"}, 
+          Z: {dimensions?.z?.toFixed(2) || "N/A"}
+        </p>
       </div>
 
-      {/* Infill Selection */}
-      <div className="mb-4 space-y-2">
-        <p className="mb-2 font-medium">Select Infill Percentage:</p>
-        <div className="flex gap-2">
-          {["20", "50", "100"].map((infill) => (
-            <button
-              key={infill}
-              onClick={() => setSelectedInfill(infill)}
-              className={`${styles.infillButton} ${
-                selectedInfill === infill ? styles.activeInfill : styles.inactiveInfill
-              }`}
-            >
-              {infill}%
-            </button>
-          ))}
-        </div>
+      <div className={styles.pricingFooter}>
+        <p className={styles.totalPrice}>Total: ₹{finalPrice.toFixed(2)}</p>
+        <button onClick={handlePayment} className={styles.paymentButton}>
+          Pay Advance: ₹{advancePayment.toFixed(2)}
+        </button>
       </div>
-
-      {/* Price Display */}
-      <div className="mb-4">
-        <p className="text-lg font-semibold">Estimated Price: ₹{finalPrice.toFixed(2)}</p>
-      </div>
-
-      {/* Payment Button */}
-      <button onClick={handlePayment} className={styles.payAdvanceButton}>
-        Pay Advance: ₹{advancePayment.toFixed(2)}
-      </button>
     </div>
   );
 }
 
-// Main STLViewer Component
 export default function STLViewer() {
   const [stlUrl, setStlUrl] = useState("");
+  const [stlFile, setStlFile] = useState(null);
+  const [volume, setVolume] = useState(null);
+  const [dimensions, setDimensions] = useState(null);
   const [loading, setLoading] = useState(false);
-  // Store estimated weight (in grams) for pricing calculations.
-  const [fileData, setFileData] = useState(null);
 
   const handleFileUpload = (acceptedFiles) => {
     const file = acceptedFiles[0];
     if (!file) return;
-
+    
     if (!file.name.toLowerCase().endsWith(".stl")) {
-      alert("Please upload an STL file.");
+      alert("Please upload an STL file");
       return;
     }
-
+    
     setLoading(true);
-    // Simulate file upload delay
-    setTimeout(() => {
-      const url = URL.createObjectURL(file);
-      setStlUrl(url);
+    setStlFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const arrayBuffer = e.target.result;
+      const loader = new STLLoader();
+      try {
+        const geometry = loader.parse(arrayBuffer);
+        const vol = getVolume(geometry);
+        setVolume(vol);
+        const dims = computeDimensions(geometry);
+        setDimensions(dims);
+      } catch (err) {
+        alert("Error parsing STL file: " + err.message);
+      }
       setLoading(false);
-      calculateWeight(file);
-    }, 2000);
+    };
+    reader.readAsArrayBuffer(file);
+    
+    const url = URL.createObjectURL(file);
+    setStlUrl(url);
   };
 
-  // Simulated weight calculation (in grams) based on file size.
-  const calculateWeight = (file) => {
-    const fileSizeMB = file.size / (1024 * 1024);
-    const estimatedWeight = fileSizeMB * 10;
-    setFileData({ weight: estimatedWeight });
-  };
-
-  // Let the carousel take any number of images from the images folder.
-  // (Make sure you update the array below with the correct paths.)
-  const carouselImages = [
-    "image1.jpg",
-    "./images/image2.jpg",
-    "./images/image3.jpg",
-    "./images/image4.jpg",
-    // You can add more image paths here.
-  ];
+  const carouselMarginClass =
+    stlUrl || loading ? styles.carouselActive : styles.carouselDefault;
 
   return (
-    <div className={styles.mainContainer}>
-      { !stlUrl ? (
-        // No file uploaded: show the Dropzone and the printer lottie (or uploading lottie if in progress)
-        <div className={styles.uploadContainer}>
-          {/* <h2 className="text-xl font-bold mb-4">Select Your Design</h2> */}
-          <div className="flex flex-row gap-4 w-full justify-center ">
-            <div className="flex">
-              <Dropzone onDrop={handleFileUpload} accept={{ "model/stl": [".stl"] }}>
-                {({ getRootProps, getInputProps }) => (
-                  <div {...getRootProps()} className={styles.fileInput}>
-                    <input {...getInputProps()} />
-                    <p className="mt-2 text-center">
-                      Drag &amp; drop an STL file here, or click to select one.
+    <div className={styles.container}>
+      <div className={styles.dropzoneContainer}>
+        <Dropzone onDrop={handleFileUpload} accept={{ "model/stl": [".stl"] }}>
+          {({ getRootProps, getInputProps }) => (
+            <div {...getRootProps()} className={styles.dropzoneArea}>
+              <input {...getInputProps()} />
+              <div className={styles.dropzoneContent}>
+                {loading ? (
+                  <Lottie
+                    animationData={uploadingAnimation}
+                    className={styles.uploadingAnimation}
+                  />
+                ) : (
+                  <>
+                    <Upload className={styles.uploadIcon} />
+                    <p className={styles.dropzoneText}>
+                      Drag and drop your STL file here, or click to select.
                     </p>
-                  </div>
+                  </>
                 )}
-              </Dropzone>
+              </div>
             </div>
-            <div className={styles.printerContainer}>
-              {loading ? (
-                <Lottie animationData={uploadingAnimation} style={{ width: 500, height: 500 }} />
-              ) : (
-                <Lottie animationData={printerAnimation} style={{ width: 500, height: 500 }} />
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        // File is uploaded: show a two-column layout where the left side displays the STL viewer
-        // and the right side displays the print settings.
-        <div className={styles.resultContainer}>
-          <div className={styles.viewerWrapper}>
-            <ThreeScene stlUrl={stlUrl} viewerSize={500} />
-          </div>
-          <div className={styles.pricingWrapper}>
-            <PricingOptions weight={fileData.weight} />
-          </div>
+          )}
+        </Dropzone>
+      </div>
+
+      {!stlUrl && !loading && (
+        <div className={styles.animationContainer}>
+          <Lottie
+            animationData={printerAnimation}
+            className={styles.printerAnimation}
+          />
         </div>
       )}
 
-      {/* Carousel Component (accepting any number of images) */}
-      <Carousel images={carouselImages} />
+      {stlUrl && volume && (
+        <div className={styles.viewerLayout}>
+          <ThreeScene stlUrl={stlUrl} />
+          <PricingOptions volume={volume} stl={stlFile} dimensions={dimensions} />
+        </div>
+      )}
 
-      {/* Footer Section */}
-      <Footer />
+      <ImageCarousel className={carouselMarginClass} />
     </div>
   );
 }

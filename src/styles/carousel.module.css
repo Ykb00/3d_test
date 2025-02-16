@@ -1,0 +1,43 @@
+/* Carousel.module.css */
+.carouselContainer {
+  @apply relative w-full max-w-5xl mx-auto mb-8;
+  /* Note: Remove any fixed margin-top here since we will add it conditionally */
+}
+
+/* New classes for top margin */
+.carouselDefault {
+  @apply mt-[-100px];
+}
+
+.carouselActive {
+  margin-top: 30px;
+}
+
+/* Existing styles */
+.carouselWrapper {
+  @apply overflow-hidden rounded-xl bg-gray-100 p-4;
+}
+
+.carouselSlide {
+  @apply flex justify-center transition-transform duration-500 ease-out;
+}
+
+.carouselImageWrapper {
+  @apply w-full flex justify-center;
+}
+
+.carouselImage {
+  @apply w-full max-h-96 object-contain;
+}
+
+.navButton {
+  @apply absolute bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors;
+}
+
+.prevButton {
+  @apply left-2 top-1/2 -translate-y-1/2;
+}
+
+.nextButton {
+  @apply right-2 top-1/2 -translate-y-1/2;
+}

@@ -1,12 +1,18 @@
 /* Footer.module.css */
+
 .footer {
-  @apply p-4 bg-gray-800 text-white text-center text-sm;
+  @apply bg-gray-800 text-white text-center p-4;
 }
 
-.footerLinks {
-  @apply flex justify-center space-x-4 mb-2;
+.links {
+  @apply flex flex-wrap justify-center gap-4 mb-2;
 }
 
-.footerLink {
-  @apply cursor-pointer hover:underline;
+.link {
+  @apply text-sm text-gray-400 hover:underline;
+  text-decoration: none; /* Remove default underline */
+}
+
+.copy {
+  @apply text-xs;
 }

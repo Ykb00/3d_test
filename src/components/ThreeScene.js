@@ -1,15 +1,17 @@
-// ThreeScene.js
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Center, Float, Edges } from "@react-three/drei";
 import { useLoader } from "@react-three/fiber";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { Suspense } from "react";
+import styles from "../styles/ThreeScene.module.css";
+import * as THREE from "three";
 
 function Model({ url }) {
   const geometry = useLoader(STLLoader, url);
   
   return (
-    <Center scale={1.5}>
+    <Center scale={1}>
+      {/* Ensure Float is used inside the Canvas */}
       <Float speed={1.5} rotationIntensity={0.5} floatIntensity={0.5}>
         <mesh geometry={geometry}>
           <meshPhongMaterial color="#4a9eff" shininess={100} specular="#ffffff" />
@@ -20,21 +22,10 @@ function Model({ url }) {
   );
 }
 
-export default function ThreeScene({ stlUrl, viewerSize = 500 }) {
+export default function ThreeScene({ stlUrl }) {
   return (
-    <div
-      style={{
-        width: `${viewerSize}px`,
-        height: `${viewerSize}px`,
-        backgroundColor: "#f3f4f6",
-        borderRadius: "10px",
-        overflow: "hidden",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Canvas camera={{ position: [15, 25, 15], fov: 60 }} shadows>
+    <div className={styles.threeSceneContainer}>
+      <Canvas camera={{ position: [15, 35, 15], fov: 60 }} shadows>
         <color attach="background" args={["#f3f4f6"]} />
         <Suspense fallback={null}>
           <ambientLight intensity={0.5} />

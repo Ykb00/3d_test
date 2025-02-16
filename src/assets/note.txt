@@ -1,0 +1,15 @@
+issues: 
+1. price change of rs 5 for 20% infill, 5.5% for 50% infill and 6 for 100% infill if PLA. 
+2. price change of rs 8 for 20% infill, 8.5% for 50% infill and 9 for 100% infill if dual coloured PLA. 
+3. price change of rs 7 for 20% infill, 7.5% for 50% infill and 8 for 100% infill if ABS. 
+
+
+
+
+cost - scrapper ( 20% - rs 70 , 14 g ) ( 100% - rs 140 , 28g )
+     - benchy ( 20% - rs 85 , 17g) ( 100% - rs 130 , 26g )
+
+
+add features:
+     1. scaling option depending upon the printer size and minimum dimensions
+     2. integrated option to go towards shop - add images and a shop icon next to it

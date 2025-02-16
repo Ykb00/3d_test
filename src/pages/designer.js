@@ -1,32 +1,46 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import LottiePlayer from "../components/LottiePlayer";
-import animationData from "../assets/designer.json"; // Import the Lottie JSON
+import animationData from "../assets/designer.json"; // Lottie JSON file for the designer animation
+import { FaWhatsapp, FaEnvelope } from "react-icons/fa";
+import styles from "../styles/designer.module.css";
 
 export default function Designer() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className={styles.container}>
       <Header />
-      <main className="flex-grow flex items-center justify-center">
-        <div className="flex flex-row items-center justify-center space-x-10">
-          {/* Lottie Animation */}
-          <LottiePlayer animationPath={animationData} />
-          {/* Upload Section */}
-          <div className="bg-white p-6 rounded-lg shadow-md w-1/2">
-            <h1 className="text-2xl font-bold mb-2">Need a Designer?</h1>
-            <p className="text-gray-600 mb-4">
-              Upload your requirements, and we'll connect you with the best designers.
-            </p>
-            <input
-              type="file"
-              accept=".stl"
-              className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-            />
+      <main className={styles.main}>
+        <div className={styles.content}>
+          {/* Left Column: Lottie Animation */}
+          <div className={styles.leftColumn}>
+            <LottiePlayer animationPath={animationData} />
+          </div>
+          {/* Right Column: Designer Information */}
+          <div className={styles.rightColumn}>
+            <h1 className={styles.title}>Our Experienced Designers</h1>
+            <ul className={styles.list}>
+              <li>Expert in SolidWorks, Catia, and NX for robust functional designs.</li>
+              <li>Skilled in Blender and Creo for organic and innovative designs.</li>
+              <li>Proficient in Fusion 360 for versatile product development.</li>
+              <li>Strong portfolio in industrial, consumer, and artistic design projects.</li>
+              <li>Years of experience in 3D modeling, rapid prototyping, and design optimization.</li>
+            </ul>
+            <div className={styles.cta}>
+              <a
+                href="https://wa.me/918921378281"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.ctaButton}
+              >
+                <FaWhatsapp className={styles.ctaButtonIcon} /> WhatsApp
+              </a>
+              <a
+                href="mailto:yaswanthkumar7b@gmail.com"
+                className={styles.ctaButton}
+              >
+                <FaEnvelope className={styles.ctaButtonIcon} /> Email
+              </a>
+            </div>
           </div>
         </div>
       </main>
