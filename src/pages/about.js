@@ -1,7 +1,7 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Link from "next/link";
-import styles from "../styles/About.module.css";
+import styles from "../styles/about.module.css";
 
 export default function About() {
   return (
