@@ -1,0 +1,53 @@
+steps:
+  # 1️⃣ Install dependencies (cached for faster builds)
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["install"]
+    id: "Install dependencies"
+    env:
+      - "NODE_ENV=production"
+
+  # 2️⃣ Build Next.js app
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["run", "build"]
+    id: "Build Next.js"
+
+  # 3️⃣ Export static files (if needed)
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["run", "export"]
+    id: "Export static files"
+
+  # 4️⃣ Build Docker image & push to Google Container Registry (GCR) or Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
+      - "."
+    id: "Build Docker Image"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
+    id: "Push to Container Registry"
+
+  # 5️⃣ Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "nextjs-app"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
+      - "--region"
+      - "us-central1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+    id: "Deploy to Cloud Run"
+
+timeout: "1200s"  # Set a timeout of 20 minutes
+
+images:
+  - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
