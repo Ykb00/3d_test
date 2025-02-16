@@ -1,53 +1,44 @@
-steps:
-  # 1️⃣ Install dependencies (cached for faster builds)
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["install"]
-    id: "Install dependencies"
-    env:
-      - "NODE_ENV=production"
+name: Deploy to GCP
 
-  # 2️⃣ Build Next.js app
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["run", "build"]
-    id: "Build Next.js"
+on:
+  push:
+    branches:
+      - main  # Runs when pushing to the main branch
 
-  # 3️⃣ Export static files (if needed)
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["run", "export"]
-    id: "Export static files"
+jobs:
+  deploy:
+    name: Deploy to Google Cloud
+    runs-on: ubuntu-latest
 
-  # 4️⃣ Build Docker image & push to Google Container Registry (GCR) or Artifact Registry
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "build"
-      - "-t"
-      - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
-      - "."
-    id: "Build Docker Image"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "push"
-      - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
-    id: "Push to Container Registry"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
 
-  # 5️⃣ Deploy to Cloud Run
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: gcloud
-    args:
-      - "run"
-      - "deploy"
-      - "nextjs-app"
-      - "--image"
-      - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
-      - "--region"
-      - "us-central1"
-      - "--platform"
-      - "managed"
-      - "--allow-unauthenticated"
-    id: "Deploy to Cloud Run"
+      - name: Install dependencies
+        run: npm install
 
-timeout: "1200s"  # Set a timeout of 20 minutes
+      - name: Build project
+        run: npm run build
 
-images:
-  - "gcr.io/$PROJECT_ID/nextjs-app:$SHORT_SHA"
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}  # Use a GitHub Secret for your GCP Service Account Key
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Google Cloud Run
+        run: |
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app
+          gcloud run deploy my-app \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app \
+            --platform managed \
+            --region ${{ secrets.GCP_REGION }} \
+            --allow-unauthenticated
