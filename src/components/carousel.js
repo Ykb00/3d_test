@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import styles from "../styles/Carousel.module.css";
+import styles from "../styles/carousel.module.css";
 
 export default function SingleImageCarousel({ className = "" }) {
   const [currentIndex, setCurrentIndex] = useState(0);
