@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import LottiePlayer from "../components/LottiePlayer";
+// import LottiePlayer from "../components/LottiePlayer";
 import animationData from "../assets/designer.json"; // Lottie JSON file for the designer animation
 import { FaWhatsapp, FaEnvelope } from "react-icons/fa";
 import styles from "../styles/designer.module.css";
@@ -13,7 +13,7 @@ export default function Designer() {
         <div className={styles.content}>
           {/* Left Column: Lottie Animation */}
           <div className={styles.leftColumn}>
-            <LottiePlayer animationPath={animationData} />
+            {/* <LottiePlayer animationPath={animationData} /> */}
           </div>
           {/* Right Column: Designer Information */}
           <div className={styles.rightColumn}>

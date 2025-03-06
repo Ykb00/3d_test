@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import Lottie from "lottie-react";
+// import Lottie from "lottie-react";
 import styles from "../styles/Payment.module.css";
 
 // Instantiate Supabase client directly in this file.
@@ -206,10 +206,10 @@ export default function Payment() {
               {fileError && <p className={styles.fileError}>{fileError}</p>}
             </div>
             {uploading && (
-              <Lottie
-                animationData={uploadingAnimation}
-                className={styles.uploadingAnimation}
-              />
+              // <Lottie
+              //   animationData={uploadingAnimation}
+              //   className={styles.uploadingAnimation}
+              // />
             )}
             <button onClick={handleOk} className={styles.okButton}>
               OK
